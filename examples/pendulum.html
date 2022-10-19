@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+	<title>Signal Ramping</title>
+
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<link rel="icon" type="image/png" sizes="174x174" href="./favicon.png">
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.0.0/p5.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/2.4.3/webcomponents-bundle.js"></script>
+	<link href="https://fonts.googleapis.com/css?family=Material+Icons&display=block" rel="stylesheet"/>
+	<script src="../build/Tone.js"></script>
+	<script src="./js/tone-ui.js"></script>
+	<script src="./js/components.js"></script>
+</head>
+<body>
+	<style>
+		tone-slider {
+			width: 100%;
+			margin-top: 10px;
+		}
+	</style>
+	<tone-example label="rampTo">
+	  <div slot="explanation">
+	    Moving the mouse left and right crossfades between two drones
+		</div>
+
+		<div id="content">
+		        First  drone <tone-play-toggle id="first"></tone-play-toggle>
+		        Second drone <tone-play-toggle id="second"></tone-play-toggle>
+			<!-- brown noise <tone-play-toggle id="third"></tone-play-toggle> -->
+			Tremolo <tone-play-toggle id="tremolo"></tone-play-toggle>
+			Vibrato <tone-play-toggle id="vibrato"></tone-play-toggle>
+
+			<!-- PITCH SHIFT <tone-play-toggle id="pitchshift"></tone-play-toggle> -->
+			<!-- Bitcrusher <tone-play-toggle id="bitcrush"></tone-play-toggle> -->
+
+			<!-- TODO: -->
+			PITCH
+			<tone-slider id="pitch" min="0" max="12" value="0" units="hz"></tone-slider>
+			ACCELERATION
+			<tone-slider id="acc" min="0" max="1" value="0"></tone-slider>
+			<!-- delayTime   <tone-slider id="delayTime" min="0.001" max="1" value="0.01"></tone-slider> -->
+			<!-- window size   <tone-slider id="windowsize" min="0.001" max="1" value="0.01"></tone-slider> -->
+			<!-- LP Comb cutoff <tone-slider id="cutoff" min="0" max="10" value="1"></tone-slider> -->
+			<!-- Tremolo speed <tone-slider id="trem-speed" min="0" max="50" value="5"></tone-slider> -->
+
+		</div>
+	</tone-example>
+
+	<script type="text/javascript">
+	  const oscillators = [];
+	  const oscillators2 = [];
+
+
+
+
+	  const webAudioGain = Tone.getContext().createGain()
+	  const toneOsc = new Tone.Oscillator().connect(webAudioGain)
+
+	  
+
+	  const bassFreq = 10;
+
+	  const bassFreq2 = 50;
+
+
+	  // Tremolo - an amplitude modulation effect
+          const tremolos = []
+	  const vibratos = []
+
+	  const noise = new Tone.Noise({
+	      volume: -Infinity,
+	      type: "brown"
+	  }).toDestination();
+
+	  const filter1 = new Tone.AutoFilter({
+	      baseFrequency: 100,
+	      frequency: 0.2,
+	      wet: 1,
+//	      type: "lowpass",
+	      rolloff: -96,
+	      gain: 100
+	  }).toDestination().start();
+	  
+	  const filter2 = new Tone.AutoFilter({
+	      baseFrequency: 70,
+	      frequency: 0.01,
+	      wet: 1,
+//	      type: "lowpass",
+	      rolloff: -96,
+	      gain: 100
+	  }).toDestination().start();
+	  
+	  const lpcomb = new Tone.LowpassCombFilter({
+	      dampening: 800,
+	      resonance: 0.6,
+	      delayTime: 0.002,
+	  }).toDestination();
+
+	  
+	  const pitchshift = new Tone.PitchShift({
+	      delayTime: 0.02,
+	      feedback: 0.4,
+	      wet: 1
+	  }).toDestination();
+
+	  
+
+
+	  for (let i = 0; i < 8; i++) {
+
+	      let trem = new Tone.Tremolo({
+		  frequency: Math.random() / 20,
+		  depth: 1,
+		  spread: 0
+	      }).toDestination().start();
+
+	  tremolos.push(trem);
+
+	  let vib = new Tone.Vibrato({
+	      frequency: Math.random() / 4,
+	      depth: 1,
+	  }).toDestination();
+
+	  vibratos.push(vib);
+          
+	  oscillators.push(new Tone.Oscillator({
+	      frequency: bassFreq * i,
+	      type: "sawtooth1",
+	      volume: -Infinity,
+	      detune: Math.random() * 30 - 15,
+	  }).toDestination()
+			   .connect(pitchshift)
+			   .connect(trem)
+			   .connect(vib)
+			   .start());
+	  
+	  oscillators2.push(new Tone.Oscillator({
+	      frequency: bassFreq2 * i,
+	      type: "triangle",
+	      volume: -Infinity,
+	      detune: Math.random() * 80 - 40,
+	  }).toDestination()
+			    .connect(pitchshift)
+			    .connect(trem)
+			    .connect(vib)
+			    .start());		    
+	  
+          }
+
+
+		// bind the interface
+		document.querySelector("#first").addEventListener("start", e => {
+                    oscillators.forEach((o, i) => {
+			    o.volume.rampTo(-20 + ((8 - i) / 8) * 10 , 1);
+			});
+		});
+
+	  document.querySelector("#first").addEventListener("stop", e => {
+	      oscillators.forEach((o, i) => {
+		  o.volume.rampTo(-Infinity, 1);
+		  
+	      });
+	  });
+
+	  		// bind the interface
+		document.querySelector("#second").addEventListener("start", e => {
+                    oscillators.forEach((o, i) => {
+			oscillators2[i].volume.rampTo(-40 + ((8 - i) / 8) * 10 , 1);
+			});
+		});
+
+		document.querySelector("#second").addEventListener("stop", e => {
+                    oscillators.forEach((o, i) => {
+				  		  
+		  oscillators2[i].volume.rampTo(-Infinity, 1);
+			
+			});
+		});
+
+	  // 		// bind the interface
+	  // document.querySelector("#third").addEventListener("start", e => {
+	  //           // noise.connect(oscillators[0])
+	  //     // noise.connect(oscillators2[0])
+	  //     noise.connect(filter1).connect(filter2).start();
+	  //     console.log('start the noise')
+	  //     // connect the noise
+	  //     noise.volume.rampTo(-20,1);
+	  // });
+
+	  //       document.querySelector("#third").addEventListener("stop", e => {
+	  // 	    noise.volume.rampTo(-Infinity, 1);
+	  // 	});
+
+
+		document.querySelector("#pitch").addEventListener("input", e => {
+			pitchshift.pitch = parseFloat(e.target.value);
+		});
+
+	        // document.querySelector("#acc").addEventListener("input", e => {
+		//     pitchshift.pitch.rampTo(parseFloat(e.target.value), 0.2);
+		//     pitchshift.pitch.rampTo(0, 1);
+		// });
+
+
+     	        document.querySelector("#tremolo").addEventListener("start", e => {
+		    oscillators.forEach((osc, i) => {
+              		osc.connect(tremolos[i])
+			oscillators2[i].connect(tremolos[i])
+			});
+		});
+
+ 	        document.querySelector("#tremolo").addEventListener("stop", e => {
+		    oscillators.forEach((osc, i) => {
+              		osc.disconnect(tremolos[i]);
+			oscillators2[i].disconnect(tremolos[i])
+			});
+		});
+
+	       document.querySelector("#vibrato").addEventListener("start", e => {
+		    oscillators.forEach((osc, i) => {
+              		osc.connect(vibratos[i])
+			oscillators2[i].connect(vibratos[i])
+			});
+		});
+
+ 	        document.querySelector("#vibrato").addEventListener("stop", e => {
+		    oscillators.forEach((osc, i) => {
+              		osc.disconnect(vibratos[i]);
+			oscillators2[i].disconnect(vibratos[i])
+			});
+		});
+
+	  
+ 	  // document.querySelector("#lpcomb").addEventListener("start", e => {
+	  //     console.log("activating comb")
+	  // 	    oscillators.forEach((osc, i) => {
+          //     		osc.connect(lpcomb);
+	  // 		oscillators2[i].connect(lpcomb)
+	  // 		});
+	  // 	});
+
+	  // document.querySelector("#lpcomb").addEventListener("stop", e => {
+	  // 	    oscillators.forEach((osc, i) => {
+          //     		osc.disconnect(lpcomb);
+	  // 		oscillators2[i].disconnect(lpcomb)
+	  // 		});
+	  // 	});
+
+	  // document.querySelector("#pitchshift").addEventListener("start", e => {
+	  //     console.log("activating pitchshift")
+	  // 	    oscillators.forEach((osc, i) => {
+          //     		osc.connect(pitchshift);
+	  // 		oscillators2[i].connect(pitchshift)
+	  // 		});
+	  // 	});
+
+	  // document.querySelector("#pitchshift").addEventListener("stop", e => {
+	  // 	    oscillators.forEach((osc, i) => {
+          //     		osc.disconnect(pitchshift);
+	  // 		oscillators2[i].disconnect(pitchshift)
+	  // 		});
+	  // 	});
+
+
+	  const crossFade = new Tone.CrossFade().toDestination();
+	  // connect two inputs Tone.to a/b
+	  oscillators.forEach((osc,i) => {
+	      osc.connect(crossFade.a).start();
+	      oscillators2[i].connect(crossFade.b).start()
+	  })
+
+	  crossFade.fade.value = 0.5;
+
+	  
+	  const merge = new Tone.Merge().toDestination();
+	  // routing a sine tone in the left channel
+	  oscillators.forEach((osc, i) => {
+	      osc.connect(merge, 0.5, 0.5).start();
+//	      oscillators2[i].connect(merge, 0.5, 0.5).start();
+	  })
+	  console.log("hm")
+
+	</script>
+</body>
+</html>
