@@ -29,6 +29,7 @@
 		<div id="content">
 		        First  drone <tone-play-toggle id="first"></tone-play-toggle>
 		        Second drone <tone-play-toggle id="second"></tone-play-toggle>
+			noise background <tone-play-toggle id="third"></tone-play-toggle>
 			<!-- brown noise <tone-play-toggle id="third"></tone-play-toggle> -->
 
 			<!-- PITCH SHIFT <tone-play-toggle id="pitchshift"></tone-play-toggle> -->
@@ -57,9 +58,11 @@
 
 	  
 
-	  const bassFreq = 10;
+	  const bassFreq = 21;
 
-	  const bassFreq2 = 50;
+	  const bassFreq2 = 22;
+
+	  // const bassFreq3 = 30;
 
 
 	  // Tremolo - an amplitude modulation effect
@@ -71,22 +74,21 @@
 	      type: "brown"
 	  }).toDestination();
 
-	  const filter1 = new Tone.AutoFilter({
-	      baseFrequency: 100,
-	      frequency: 0.2,
+	  const filter1 = new Tone.Filter({
+	      frequency: 100,
 	      wet: 1,
-//	      type: "lowpass",
-	      rolloff: -96,
-	      gain: 100
-	  }).toDestination().start();
+	      type: "lowpass",
+	      rolloff: -48,
+	      gain: 1
+	  }).toDestination();
 	  
 	  const filter2 = new Tone.AutoFilter({
-	      baseFrequency: 70,
+	      baseFrequency: 150,
 	      frequency: 0.01,
 	      wet: 1,
 //	      type: "lowpass",
-	      rolloff: -96,
-	      gain: 100
+	      rolloff: -48,
+	      gain: 1
 	  }).toDestination().start();
 	  
 	  const lpcomb = new Tone.LowpassCombFilter({
@@ -103,12 +105,13 @@
 	  }).toDestination();
 
 	  
-
+	  const player = new Tone.Player("https://gist.github.com/MrChico/d90a0b6c74e145847cb0245d04cc1db1/raw/d57e8c6c5b35cf97b8cd6023608c13b96ad287c0/pend.mp3").connect(pitchshift);
+	  player.loop = true;
 
 	  for (let i = 0; i < 8; i++) {
 
 	      let trem = new Tone.Tremolo({
-		  frequency: Math.random() / 20,
+		  frequency: Math.random() / 200,
 		  depth: 1,
 		  spread: 0
 	      }).toDestination().start();
@@ -116,7 +119,7 @@
 	  tremolos.push(trem);
 
 	  let vib = new Tone.Vibrato({
-	      frequency: Math.random() / 4,
+	      frequency: Math.random() / 40,
 	      depth: 1,
 	  }).toDestination();
 
@@ -131,17 +134,19 @@
 			   .connect(pitchshift)
 			   .connect(trem)
 			   .connect(vib)
+//			   .connect(filter1)
 			   .start());
 	  
 	  oscillators2.push(new Tone.Oscillator({
 	      frequency: bassFreq2 * i,
-	      type: "triangle",
+	      type: "sawtooth",
 	      volume: -Infinity,
-	      detune: Math.random() * 80 - 40,
+	      detune: Math.random() * 30 - 15,
 	  }).toDestination()
 //			    .connect(pitchshift)
 			    .connect(trem)
 			    .connect(vib)
+			    .connect(filter1)
 			    .start());		    
 	  
           }
@@ -164,7 +169,7 @@
 	  		// bind the interface
 		document.querySelector("#second").addEventListener("start", e => {
                     oscillators.forEach((o, i) => {
-			oscillators2[i].volume.rampTo(-40 + ((8 - i) / 8) * 10 , 1);
+			oscillators2[i].volume.rampTo(-50 + ((8 - i) / 8) * 10 , 1);
 			});
 		});
 
@@ -176,19 +181,18 @@
 			});
 		});
 
-	  // 		// bind the interface
-	  // document.querySelector("#third").addEventListener("start", e => {
-	  //           // noise.connect(oscillators[0])
-	  //     // noise.connect(oscillators2[0])
-	  //     noise.connect(filter1).connect(filter2).start();
-	  //     console.log('start the noise')
-	  //     // connect the noise
-	  //     noise.volume.rampTo(-20,1);
-	  // });
+ 		// bind the interface
+	  document.querySelector("#third").addEventListener("start", e => {
+              // noise.connect(oscillators[0])
+	      // noise.connect(oscillators2[0])
+	      player.start();
+	      console.log('start the noise')
+	      // connect the noise
+	  });
 
-	  //       document.querySelector("#third").addEventListener("stop", e => {
-	  // 	    noise.volume.rampTo(-Infinity, 1);
-	  // 	});
+	  document.querySelector("#third").addEventListener("stop", e => {
+	      player.stop();
+	  });
 
 
 		document.querySelector("#pitch").addEventListener("input", e => {
@@ -274,8 +278,9 @@
 	  // routing a sine tone in the left channel
 	  oscillators.forEach((osc, i) => {
 	      osc.connect(merge, 0.5, 0.5).start();
-//	      oscillators2[i].connect(merge, 0.5, 0.5).start();
+	      oscillators2[i].connect(merge, 0.5, 0.5).start();
 	  })
+	  player.connect(merge, 0.5, 0.5).start();
 	  console.log("hm")
 
 	</script>
