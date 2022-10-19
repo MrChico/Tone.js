@@ -30,17 +30,13 @@
 		        First  drone <tone-play-toggle id="first"></tone-play-toggle>
 		        Second drone <tone-play-toggle id="second"></tone-play-toggle>
 			<!-- brown noise <tone-play-toggle id="third"></tone-play-toggle> -->
-			Tremolo <tone-play-toggle id="tremolo"></tone-play-toggle>
-			Vibrato <tone-play-toggle id="vibrato"></tone-play-toggle>
 
 			<!-- PITCH SHIFT <tone-play-toggle id="pitchshift"></tone-play-toggle> -->
 			<!-- Bitcrusher <tone-play-toggle id="bitcrush"></tone-play-toggle> -->
 
 			<!-- TODO: -->
 			PITCH
-			<tone-slider id="pitch" min="0" max="12" value="0" units="hz"></tone-slider>
-			ACCELERATION
-			<tone-slider id="acc" min="0" max="1" value="0"></tone-slider>
+			<tone-slider id="pitch" min="0" max="7" value="0" units="hz"></tone-slider>
 			<!-- delayTime   <tone-slider id="delayTime" min="0.001" max="1" value="0.01"></tone-slider> -->
 			<!-- window size   <tone-slider id="windowsize" min="0.001" max="1" value="0.01"></tone-slider> -->
 			<!-- LP Comb cutoff <tone-slider id="cutoff" min="0" max="10" value="1"></tone-slider> -->
@@ -143,7 +139,7 @@
 	      volume: -Infinity,
 	      detune: Math.random() * 80 - 40,
 	  }).toDestination()
-			    .connect(pitchshift)
+//			    .connect(pitchshift)
 			    .connect(trem)
 			    .connect(vib)
 			    .start());		    
@@ -205,33 +201,32 @@
 		// });
 
 
-     	        document.querySelector("#tremolo").addEventListener("start", e => {
-		    oscillators.forEach((osc, i) => {
-              		osc.connect(tremolos[i])
-			oscillators2[i].connect(tremolos[i])
-			});
-		});
+     	       //  document.querySelector("#tremolo").addEventListener("start", e => {
+	       // 	    oscillators.forEach((osc, i) => {
+               // 		osc.connect(tremolos[i])
+	       // 		oscillators2[i].connect(tremolos[i])
+	       // 		});
+	       // 	});
 
- 	        document.querySelector("#tremolo").addEventListener("stop", e => {
-		    oscillators.forEach((osc, i) => {
-              		osc.disconnect(tremolos[i]);
-			oscillators2[i].disconnect(tremolos[i])
-			});
-		});
+ 	       //  document.querySelector("#tremolo").addEventListener("stop", e => {
+	       // 	    oscillators.forEach((osc, i) => {
+               // 		osc.disconnect(tremolos[i]);
+	       // 		oscillators2[i].disconnect(tremolos[i])
+	       // 		});
+	       // 	});
 
-	       document.querySelector("#vibrato").addEventListener("start", e => {
-		    oscillators.forEach((osc, i) => {
-              		osc.connect(vibratos[i])
-			oscillators2[i].connect(vibratos[i])
-			});
-		});
+	       // document.querySelector("#vibrato").addEventListener("start", e => {
+	       // 	    oscillators.forEach((osc, i) => {
+	       // 		oscillators2[i].connect(vibratos[i])
+	       // 		});
+	       // 	});
 
- 	        document.querySelector("#vibrato").addEventListener("stop", e => {
-		    oscillators.forEach((osc, i) => {
-              		osc.disconnect(vibratos[i]);
-			oscillators2[i].disconnect(vibratos[i])
-			});
-		});
+ 	       //  document.querySelector("#vibrato").addEventListener("stop", e => {
+	       // 	    oscillators.forEach((osc, i) => {
+               // 		osc.disconnect(vibratos[i]);
+	       // 		oscillators2[i].disconnect(vibratos[i])
+	       // 		});
+	       // 	});
 
 	  
  	  // document.querySelector("#lpcomb").addEventListener("start", e => {
